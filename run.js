@@ -65,6 +65,21 @@ const buildOrgChart = (data) => {
       .sort((a, b) => sortbyName(a.employee, b.employee))
   }
 
+  const hasCircularChainOfCommand = (managerData) => {
+    const dr = getDirectReports(managerData.employee)[0]
+    const drOfdr = (dr && getDirectReports(dr.employee)[0]) || null
+
+    if (drOfdr && drOfdr.employee === managerData.employee) {
+      throw new Error(
+        `circular reference! ${managerData.employee} -> ${dr.employee} -> ${drOfdr.employee}`
+      )
+    }
+  }
+
+  data.map((row) => {
+    hasCircularChainOfCommand(row)
+  })
+
   const resultList = []
 
   // CSV GENERATOR PSEUDOCODE
@@ -108,6 +123,7 @@ const buildOrgChart = (data) => {
 
   printList(topLevelManager.employee)
   resultCSV = resultList.join('\n')
+  console.log(resultCSV)
 }
 
 // Harness for reading an input CSV file into an array
