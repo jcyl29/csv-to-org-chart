@@ -129,29 +129,47 @@ const buildOrgChart = (data) => {
   const ceoDirectReports = getDirectReports(topLevelManager.employee, data)
   resultCSV += renderDRs(ceoDirectReports, 1)
 
-  const printList = (employee) => {
-    console.log(`printList, employee=${employee}`)
+  const resultList = []
 
+  const printList = (employee, nesting = 0) => {
+    const currentNesting = nesting
     while (employeeHasDirectReports(employee)) {
+      console.log(
+        `printList, inside while loop, employee=${employee}, nesting=${nesting}`
+      )
+
       const drs = getDirectReports(employee)
-      drs.forEach(({ employee }) => printList(employee))
-      for (const index in drs) {
-        printList(drs[index].employee)
-      }
+
+      const commaPrefixString = ''
+        ? nesting > 0
+        : [...Array(nesting)].map(() => ',').join('')
+
+      resultList.push(`${commaPrefixString}${employee}`)
+      drs.forEach(({ employee }) => printList(employee, currentNesting + 1))
       return
     }
+
+    const commaPrefixString = ''
+      ? nesting > 0
+      : [...Array(nesting)].map(() => ',').join('')
+
+    console.log(
+      `printList, out of while loop, employee=${employee} nesting=${nesting}`
+    )
+    resultList.push(`${commaPrefixString}${employee}`)
   }
 
-  printList('jack@lattice.com')
+  printList(topLevelManager.employee)
+  resultCSV = resultList.join('\n')
 
-  ceoDirectReports.map(({ employee }) => {
-    if (employeeHasDirectReports(employee)) {
-      console.log(`employee ${employee} has subors`)
-      getDirectReports()
-    } else {
-      console.log(`employee ${employee}`)
-    }
-  })
+  // ceoDirectReports.map(({ employee }) => {
+  //   if (employeeHasDirectReports(employee)) {
+  //     console.log(`employee ${employee} has subors`)
+  //     getDirectReports()
+  //   } else {
+  //     console.log(`employee ${employee}`)
+  //   }
+  // })
 
   // console.log('resultCSV')
   // console.log(resultCSV)
