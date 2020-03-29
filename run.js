@@ -73,35 +73,26 @@ const buildOrgChart = (data) => {
     throw new Error('no top level manager found')
   }
 
-  const topLevelManager = data.filter(row => row.manager === '')[0];
+  const topLevelManager = data.filter((row) => row.manager === '')[0]
 
-  resultCSV = `${topLevelManager.employee},\n`;
+  const test = getEmployee('joan@lattice.com', data)
 
-  const ceoDirectReports = getDirectReports(topLevelManager.employee, data);
-  console.log('ceoDirectReports', ceoDirectReports);
+  console.log(
+    'topLevelManager.employee',
+    topLevelManager.employee,
+    'test',
+    test
+  )
 
-  resultCSV += renderDRs(ceoDirectReports, 1);
+  const commaHierachyGenerator = (personData) => {
+    while (personData.employee !== topLevelManager.employee) {
+      return ',' + commaHierachyGenerator(getEmployee(personData.manager, data))
+    }
+    return ''
+  }
 
-  ceoDirectReports.map(({ employee }) => {
-    const drs2 = getDirectReports(employee, data);
-    console.log("drs2 num direct reports", drs2.length)
-    console.log("drs2 for", employee, drs2)
-    // resultCSV += renderDRs(drs2, 2);
-    drs2.map(({employee})=> {
-      const drs3 = getDirectReports(employee, data);
-      console.log("drs3 num direct reports", drs3.length)
-      // console.log("next level, drs3 for", employee, drs3)
-      // resultCSV += renderDRs(drs3, 3);
-      drs3.map(({employee}) => {
-        const drs4 = getDirectReports(employee, data);
-        console.log("drs4: num direct reports", drs4.length)
-        console.log("next level, drs4 for", employee, drs4)
-        resultCSV += renderDRs(drs4, 4);
-      })
-    })
-
-
-  });
+  const result = commaHierachyGenerator(test) + test.employee
+  console.log('commaHierachyGenerator result', result)
 
   console.log(resultCSV)
 
