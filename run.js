@@ -52,12 +52,6 @@ const sortbyName = (d1, d2) => {
   return comparison
 }
 
-const getDirectReports = (manager, data) => {
-  return data
-    .filter((row) => row.manager === manager)
-    .sort((a, b) => sortbyName(a, b))
-}
-
 const getEmployee = (email, data) => {
   return data.filter((row) => row.employee === email)[0]
 }
@@ -75,6 +69,16 @@ const buildOrgChart = (data) => {
 
   const topLevelManager = data.filter((row) => row.manager === '')[0]
 
+  const employeeHasDirectReports = (name) => {
+    return data.filter(({ manager }) => name === manager).length > 0
+  }
+
+  const getDirectReports = (manager) => {
+    return data
+      .filter((row) => row.manager === manager)
+      .sort((a, b) => sortbyName(a, b))
+  }
+
   const commaHierachyGenerator = (personData) => {
     while (personData.employee !== topLevelManager.employee) {
       return ',' + commaHierachyGenerator(getEmployee(personData.manager, data))
@@ -82,26 +86,75 @@ const buildOrgChart = (data) => {
     return ''
   }
 
-  resultCSV = data.map((row) => {
-    return commaHierachyGenerator(row) + row.employee
-  }).join('\n')
+  data.map((row) => {
+    // console.log(
+    //   row.employee,
+    //   'employeeHasDirectReports?',
+    //   employeeHasDirectReports(row.employee, data)
+    // )
+  })
+
+  resultCSV = data
+    .map((row) => {
+      return commaHierachyGenerator(row) + row.employee
+    })
+    .join('\n')
+
+  // console.log('resultCSV', resultCSV)
+
+  resultCSV = ''
 
   const obj = {}
 
-  const foo = (email) => {
-    // console.log('email', email, 'result', data.filter( row=> row.manager === email))
-    const listOfDirectReports = data.reduce((acc, row) => {
-      if (row.manager === email) {
-        acc.push(row.employee)
+  // const foo = (email) => {
+  //   console.log(
+  //     'email',
+  //     email,
+  //     'result',
+  //     data.filter((row) => row.manager === email)
+  //   )
+  //   const listOfDirectReports = data.reduce((acc, row) => {
+  //     if (row.manager === email) {
+  //       acc.push(row.employee)
+  //     }
+  //     return acc
+  //   }, [])
+  //   obj[email] = listOfDirectReports
+  // }
+  //
+  // data.forEach((row) => {
+  //   foo(row.employee)
+  // })
+
+  const ceoDirectReports = getDirectReports(topLevelManager.employee, data)
+  resultCSV += renderDRs(ceoDirectReports, 1)
+
+  const printList = (employee) => {
+    console.log(`printList, employee=${employee}`)
+
+    while (employeeHasDirectReports(employee)) {
+      const drs = getDirectReports(employee)
+      drs.forEach(({ employee }) => printList(employee))
+      for (const index in drs) {
+        printList(drs[index].employee)
       }
-      return acc
-    }, [])
-    obj[email] = listOfDirectReports
+      return
+    }
   }
 
-  data.forEach((row) => {
-    foo(row.employee)
+  printList('jack@lattice.com')
+
+  ceoDirectReports.map(({ employee }) => {
+    if (employeeHasDirectReports(employee)) {
+      console.log(`employee ${employee} has subors`)
+      getDirectReports()
+    } else {
+      console.log(`employee ${employee}`)
+    }
   })
+
+  // console.log('resultCSV')
+  // console.log(resultCSV)
 
   // console.log("obj", obj);
 
