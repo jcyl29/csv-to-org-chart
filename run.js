@@ -65,19 +65,52 @@ const buildOrgChart = (data) => {
       .sort((a, b) => sortbyName(a.employee, b.employee))
   }
 
-  const hasCircularChainOfCommand = (managerData) => {
-    const dr = getDirectReports(managerData.employee)[0]
-    const drOfdr = (dr && getDirectReports(dr.employee)[0]) || null
+  // CIRCULAR CHAIN OF COMMAND PSEUDOCODE
+  // for a given person
+  //  if the employees subordinates, and if those subordinates have subordinates, if any of these nested
+  //    subordinates have the given person as their manager
+  //    record the the chain of command, and throw error
+  //  else
+  //    continue the loop
 
-    if (drOfdr && drOfdr.employee === managerData.employee) {
-      throw new Error(
-        `circular reference! ${managerData.employee} -> ${dr.employee} -> ${drOfdr.employee}`
-      )
-    }
-  }
+  // PATTERN
+  // declare some variables to store some state outside of the recursive function
+  // write recursive function that will mutate those outside variables
+  // there should be some logic between the variables in the recursive function
+  // and the outside variables that will dictate the base case of the recursion
+  // Or in other words, it will determine when to break out of recursion
 
   data.map((row) => {
-    hasCircularChainOfCommand(row)
+    const testEmployee = row.employee
+    // if a direct report's subordinate ends up being test employee (the manager)
+    // then a circular reference has been created
+    // then this test employee's direct reports will be looped again, causing an
+    // infinite loop.  Keep track how many times this looping happens,
+    // and throw error after more than one loop has iterated
+    let loopedOnce = 0
+    const path = []
+
+    const checkCircularReference = (employee) => {
+      path.push(employee)
+      while (getDirectReports(employee).length > 0) {
+        if (employee === testEmployee) {
+          loopedOnce = loopedOnce + 1
+        }
+
+        if (loopedOnce > 1) {
+          const pathString = path.join(' -> ')
+          throw new Error(`Circular chain of command: ${pathString}`)
+        }
+
+        const drs = getDirectReports(employee)
+        drs.forEach(({ employee }) =>
+          checkCircularReference(employee, employee)
+        )
+        return
+      }
+    }
+
+    checkCircularReference(testEmployee)
   })
 
   const resultList = []
