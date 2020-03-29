@@ -75,15 +75,6 @@ const buildOrgChart = (data) => {
 
   const topLevelManager = data.filter((row) => row.manager === '')[0]
 
-  const test = getEmployee('joan@lattice.com', data)
-
-  console.log(
-    'topLevelManager.employee',
-    topLevelManager.employee,
-    'test',
-    test
-  )
-
   const commaHierachyGenerator = (personData) => {
     while (personData.employee !== topLevelManager.employee) {
       return ',' + commaHierachyGenerator(getEmployee(personData.manager, data))
@@ -91,10 +82,9 @@ const buildOrgChart = (data) => {
     return ''
   }
 
-  const result = commaHierachyGenerator(test) + test.employee
-  console.log('commaHierachyGenerator result', result)
-
-  console.log(resultCSV)
+  resultCSV = data.map((row) => {
+    return commaHierachyGenerator(row) + row.employee
+  }).join('\n')
 
   const obj = {}
 
