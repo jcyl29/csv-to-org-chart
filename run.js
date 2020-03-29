@@ -34,30 +34,20 @@ jack,
 
 let resultCSV = ''
 
-const renderDRs = (drList, nesting) => {
-  const commaString = [...Array(nesting)].map(() => ',').join('')
-  return drList.map(({ employee }) => `${commaString}${employee}`).join('\n')
-}
-
-const sortbyName = (d1, d2) => {
-  const nameA = d1.employee.toUpperCase()
-  const nameB = d2.employee.toUpperCase()
+const sortbyName = (nameA, nameB) => {
+  const nameAUpper = nameA.toUpperCase()
+  const nameBUpper = nameB.toUpperCase()
 
   let comparison = 0
-  if (nameA > nameB) {
+  if (nameAUpper > nameBUpper) {
     comparison = 1
-  } else if (nameA < nameB) {
+  } else if (nameAUpper < nameBUpper) {
     comparison = -1
   }
   return comparison
 }
 
-const getEmployee = (email, data) => {
-  return data.filter((row) => row.employee === email)[0]
-}
-
 const buildOrgChart = (data) => {
-  // console.log(data, 'data')
   // Put your implementation here:
   if (
     data.every((row) => {
@@ -69,89 +59,31 @@ const buildOrgChart = (data) => {
 
   const topLevelManager = data.filter((row) => row.manager === '')[0]
 
-  const employeeHasDirectReports = (name) => {
-    return data.filter(({ manager }) => name === manager).length > 0
-  }
-
   const getDirectReports = (manager) => {
     return data
       .filter((row) => row.manager === manager)
-      .sort((a, b) => sortbyName(a, b))
+      .sort((a, b) => sortbyName(a.employee, b.employee))
   }
-
-  const commaHierachyGenerator = (personData) => {
-    while (personData.employee !== topLevelManager.employee) {
-      return ',' + commaHierachyGenerator(getEmployee(personData.manager, data))
-    }
-    return ''
-  }
-
-  data.map((row) => {
-    // console.log(
-    //   row.employee,
-    //   'employeeHasDirectReports?',
-    //   employeeHasDirectReports(row.employee, data)
-    // )
-  })
-
-  resultCSV = data
-    .map((row) => {
-      return commaHierachyGenerator(row) + row.employee
-    })
-    .join('\n')
-
-  // console.log('resultCSV', resultCSV)
-
-  resultCSV = ''
-
-  const obj = {}
-
-  // const foo = (email) => {
-  //   console.log(
-  //     'email',
-  //     email,
-  //     'result',
-  //     data.filter((row) => row.manager === email)
-  //   )
-  //   const listOfDirectReports = data.reduce((acc, row) => {
-  //     if (row.manager === email) {
-  //       acc.push(row.employee)
-  //     }
-  //     return acc
-  //   }, [])
-  //   obj[email] = listOfDirectReports
-  // }
-  //
-  // data.forEach((row) => {
-  //   foo(row.employee)
-  // })
-
-  const ceoDirectReports = getDirectReports(topLevelManager.employee, data)
-  resultCSV += renderDRs(ceoDirectReports, 1)
 
   const resultList = []
 
   const printList = (employee, nesting = 0) => {
     const currentNesting = nesting
-    while (employeeHasDirectReports(employee)) {
+    const commaPrefixString = ''
+      ? nesting === 0
+      : [...Array(nesting)].map(() => ',').join('')
+
+    while (getDirectReports(employee).length > 0) {
       console.log(
         `printList, inside while loop, employee=${employee}, nesting=${nesting}`
       )
 
       const drs = getDirectReports(employee)
 
-      const commaPrefixString = ''
-        ? nesting > 0
-        : [...Array(nesting)].map(() => ',').join('')
-
       resultList.push(`${commaPrefixString}${employee}`)
       drs.forEach(({ employee }) => printList(employee, currentNesting + 1))
       return
     }
-
-    const commaPrefixString = ''
-      ? nesting > 0
-      : [...Array(nesting)].map(() => ',').join('')
 
     console.log(
       `printList, out of while loop, employee=${employee} nesting=${nesting}`
@@ -161,28 +93,6 @@ const buildOrgChart = (data) => {
 
   printList(topLevelManager.employee)
   resultCSV = resultList.join('\n')
-
-  // ceoDirectReports.map(({ employee }) => {
-  //   if (employeeHasDirectReports(employee)) {
-  //     console.log(`employee ${employee} has subors`)
-  //     getDirectReports()
-  //   } else {
-  //     console.log(`employee ${employee}`)
-  //   }
-  // })
-
-  // console.log('resultCSV')
-  // console.log(resultCSV)
-
-  // console.log("obj", obj);
-
-  // data.forEach(row=>{
-  //   resultCSV += row.employee +`\n`;
-  // })
-  //
-  // // console.log(resultCSV);
-
-  // resultCSV = "jack"
 }
 
 // Harness for reading an input CSV file into an array
