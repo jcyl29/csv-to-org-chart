@@ -67,6 +67,21 @@ const buildOrgChart = (data) => {
 
   const resultList = []
 
+  // CSV GENERATOR PSEUDOCODE
+  // for a given employee
+  //    get his direct reports
+  //    if direct report has no suboridinates
+  //         print out row
+  //    else
+  //         get the subordinates of the direct report and repeat process
+
+  // PATTERN
+  // declare some variables to store some state outside of the recursive function
+  // write recursive function that will mutate those outside variables
+  // there should be some logic between the variables in the recursive function
+  // and the outside variables that will dictate the base case of the recursion
+  // Or in other words, it will determine when to break out of recursion
+
   const printList = (employee, nesting = 0) => {
     const currentNesting = nesting
     const commaPrefixString = ''
@@ -122,10 +137,10 @@ const isEqual = (expected, actual) => {
   try {
     const splitExpected = expected
       .split('\n')
-      .filter((entry) => entry.includes('@lattice.com'))
+      .filter((entry) => entry.includes('@company.com'))
     const splitActual = actual
       .split('\n')
-      .filter((entry) => entry.includes('@lattice.com'))
+      .filter((entry) => entry.includes('@company.com'))
 
     let isEqual = true
     splitExpected.forEach((row, index) => {
