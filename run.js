@@ -1,6 +1,6 @@
-const fs = require('fs');
-const csv = require('csv-parser');
-const _ = require('lodash');
+const fs = require('fs')
+const csv = require('csv-parser')
+const _ = require('lodash')
 
 /*
 
@@ -32,41 +32,45 @@ jack,
 
 */
 
-let resultCSV = '';
+let resultCSV = ''
 
 const renderDRs = (drList, nesting) => {
-  const commaString = [...Array(nesting)].map(() => ',').join('');
-  return drList.map(({ employee }) => `${commaString}${employee}`).join('\n');
-};
+  const commaString = [...Array(nesting)].map(() => ',').join('')
+  return drList.map(({ employee }) => `${commaString}${employee}`).join('\n')
+}
 
 const sortbyName = (d1, d2) => {
-  const nameA = d1.employee.toUpperCase();
-  const nameB = d2.employee.toUpperCase();
+  const nameA = d1.employee.toUpperCase()
+  const nameB = d2.employee.toUpperCase()
 
-  let comparison = 0;
+  let comparison = 0
   if (nameA > nameB) {
-    comparison = 1;
+    comparison = 1
   } else if (nameA < nameB) {
-    comparison = -1;
+    comparison = -1
   }
-  return comparison;
-};
+  return comparison
+}
 
 const getDirectReports = (manager, data) => {
   return data
-    .filter(row => row.manager === manager)
-    .sort((a, b) => sortbyName(a, b));
-};
+    .filter((row) => row.manager === manager)
+    .sort((a, b) => sortbyName(a, b))
+}
 
-const buildOrgChart = data => {
-  // console.log(data, "data")
+const getEmployee = (email, data) => {
+  return data.filter((row) => row.employee === email)[0]
+}
+
+const buildOrgChart = (data) => {
+  // console.log(data, 'data')
   // Put your implementation here:
   if (
-    data.every(row => {
-      return !!row.manager;
+    data.every((row) => {
+      return !!row.manager
     })
   ) {
-    throw new Error('no top level manager found');
+    throw new Error('no top level manager found')
   }
 
   const topLevelManager = data.filter(row => row.manager === '')[0];
@@ -99,24 +103,24 @@ const buildOrgChart = data => {
 
   });
 
-  console.log(resultCSV);
+  console.log(resultCSV)
 
-  let obj = {};
+  const obj = {}
 
-  const foo = email => {
+  const foo = (email) => {
     // console.log('email', email, 'result', data.filter( row=> row.manager === email))
     const listOfDirectReports = data.reduce((acc, row) => {
       if (row.manager === email) {
-        acc.push(row.employee);
+        acc.push(row.employee)
       }
-      return acc;
-    }, []);
-    obj[email] = listOfDirectReports;
-  };
+      return acc
+    }, [])
+    obj[email] = listOfDirectReports
+  }
 
-  data.forEach(row => {
-    foo(row.employee);
-  });
+  data.forEach((row) => {
+    foo(row.employee)
+  })
 
   // console.log("obj", obj);
 
@@ -127,58 +131,58 @@ const buildOrgChart = data => {
   // // console.log(resultCSV);
 
   // resultCSV = "jack"
-};
+}
 
 // Harness for reading an input CSV file into an array
-const run = async inputFilePath => {
-  const rows = [];
+const run = async (inputFilePath) => {
+  const rows = []
   const streamEnd = new Promise((resolve, reject) => {
     fs.createReadStream(inputFilePath)
       .pipe(csv())
-      .on('data', function(data) {
+      .on('data', function (data) {
         try {
-          rows.push(data);
+          rows.push(data)
         } catch (err) {
-          console.log(err);
-          reject();
+          console.log(err)
+          reject()
         }
       })
-      .on('end', function() {
-        buildOrgChart(rows);
-        resolve();
-      });
-  });
-  return streamEnd;
-};
+      .on('end', function () {
+        buildOrgChart(rows)
+        resolve()
+      })
+  })
+  return streamEnd
+}
 
 // Test
 const isEqual = (expected, actual) => {
   try {
     const splitExpected = expected
       .split('\n')
-      .filter(entry => entry.includes('@lattice.com'));
+      .filter((entry) => entry.includes('@lattice.com'))
     const splitActual = actual
       .split('\n')
-      .filter(entry => entry.includes('@lattice.com'));
+      .filter((entry) => entry.includes('@lattice.com'))
 
-    let isEqual = true;
+    let isEqual = true
     splitExpected.forEach((row, index) => {
       if (row !== splitActual[index]) {
-        isEqual = false;
+        isEqual = false
       }
-    });
+    })
 
-    return isEqual;
+    return isEqual
   } catch (err) {
-    return false;
+    return false
   }
-};
+}
 
-(async () => {
+;(async () => {
   // Run test
-  await run('ordered_input.csv');
-  const expectedAnswer = (await fs.readFileSync('./output.csv')).toString();
+  await run('ordered_input.csv')
+  const expectedAnswer = (await fs.readFileSync('./output.csv')).toString()
 
-  console.log('===RESULT===');
-  console.log(isEqual(expectedAnswer, resultCSV));
-})();
+  console.log('===RESULT===')
+  console.log(isEqual(expectedAnswer, resultCSV))
+})()
