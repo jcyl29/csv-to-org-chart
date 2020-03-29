@@ -87,24 +87,24 @@ const buildOrgChart = (data) => {
     // then this test employee's direct reports will be looped again, causing an
     // infinite loop.  Keep track how many times this looping happens,
     // and throw error after more than one loop has iterated
-    let loopedOnce = 0
+    let loopCount = 0
     const path = []
 
     const checkCircularReference = (employee) => {
       path.push(employee)
       while (getDirectReports(employee).length > 0) {
         if (employee === testEmployee) {
-          loopedOnce = loopedOnce + 1
+          loopCount = loopCount + 1
         }
 
-        if (loopedOnce > 1) {
+        if (loopCount > 1) {
           const pathString = path.join(' -> ')
           throw new Error(`Circular chain of command: ${pathString}`)
         }
 
         const drs = getDirectReports(employee)
         drs.forEach(({ employee }) =>
-          checkCircularReference(employee, employee)
+          checkCircularReference(employee)
         )
         return
       }
